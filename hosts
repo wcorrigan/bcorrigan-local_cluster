@@ -5,3 +5,8 @@ ansible_ssh_user=pi
 
 [guineapig]
 p1.bcorrigan-local.com
+
+
+[webservers]
+p[1:2].bcorrigan-local.com
+

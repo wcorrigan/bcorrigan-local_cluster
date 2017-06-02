@@ -1,0 +1,66 @@
+---
+- hosts: webservers
+  become: true
+  vars:
+    service:
+      longname: Apache Webserver
+      shortname: apachepi_container
+
+  tasks:
+#  - name: python setup tools
+#    apt: 
+#      pkg: python-setuptools
+#      state: present
+
+#  - name: install pip
+#    easy_install:
+#      name: pip
+#      state: latest
+
+  - name: python3
+    apt:
+      pkg: python3
+      state: present
+
+  - name: python3-pip
+    apt:
+      pkg: python3-pip
+      state: present
+
+#  - name: install docker-py
+#    easy_install:
+#      name: docker-py
+
+  - name: update pip3 using easyinstall
+    shell: easy_install3 -U pip
+
+  - name: pip3 docker
+    pip:
+      name: docker
+      executable: pip3
+
+  - name: pull apachepi image
+    docker_image:
+      name: controller.bcorrigan-local.com:5000/apachepi:v1
+
+  - name: Create apache docker container
+    docker_container:
+      name: "{{ service.shortname }}"
+      image: controller.bcorrigan-local.com:5000/apachepi:v1
+      ports:
+      - "80:80"
+
+  - name: Install apachepi.service file
+    template:
+      src: docker_any.service
+      dest: /etc/systemd/system/docker_{{ service.shortname }}.service
+      owner: root
+      group: root
+      mode: "u=rwx,g=rwx,o=rwx"
+
+  - name: Enable apache service
+    systemd:
+      name: docker_{{ service.shortname }}
+      enabled: true
+      state: started
+      masked: no
